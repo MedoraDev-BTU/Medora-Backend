@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const documentSchema = new mongoose.Schema(
   {
@@ -49,6 +50,10 @@ const clinicSchema = new mongoose.Schema(
     address: { type: String, trim: true, maxlength: 500 },
     city: { type: String, trim: true, maxlength: 80 },
 
+    // Mobil giris icin sifre (kayit olusturuldugunda admin/klinik yetkilisi tarafindan belirlenir)
+    passwordHash: { type: String, select: false },
+    lastLoginAt: { type: Date },
+
     documents: { type: [documentSchema], default: [] },
 
     // Otomatik dogrulama sonucu
@@ -65,5 +70,14 @@ const clinicSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+clinicSchema.methods.comparePassword = function (plain) {
+  if (!this.passwordHash) return Promise.resolve(false);
+  return bcrypt.compare(plain, this.passwordHash);
+};
+
+clinicSchema.statics.hashPassword = function (plain) {
+  return bcrypt.hash(plain, 10);
+};
 
 module.exports = mongoose.model('Clinic', clinicSchema);

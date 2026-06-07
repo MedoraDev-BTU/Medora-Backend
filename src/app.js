@@ -8,6 +8,9 @@ const rateLimit = require('express-rate-limit');
 const patientRoutes = require('./routes/patient.routes');
 const clinicRoutes = require('./routes/clinic.routes');
 const adminRoutes = require('./routes/admin.routes');
+const authPatientRoutes = require('./routes/auth.patient.routes');
+const authClinicRoutes = require('./routes/auth.clinic.routes');
+const locationRoutes = require('./routes/location.routes');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -36,10 +39,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'medora-verification', time: new Date().toISOString() });
 });
 
-// API yolları
+// API yolları — mevcut doğrulama akışları
 app.use('/api/patients', otpLimiter, patientRoutes);
 app.use('/api/clinics', clinicRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Mobil auth (yeni)
+app.use('/api/auth/patients', authPatientRoutes);
+app.use('/api/auth/clinics', authClinicRoutes);
+
+// Konum dönüşümü (yeni — Ece Açar ile ortak kullanılan endpoint)
+app.use('/api/location', locationRoutes);
 
 // 404
 app.use((req, res) => {
